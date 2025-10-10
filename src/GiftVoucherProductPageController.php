@@ -34,20 +34,23 @@ class GiftVoucherProductPageController extends ProductController
     {
         if ($this->canPurchase()) {
             $requiredFields = [];
-            $amount = $this->MinimumAmount;
-            $newAmount = $this->getRequest()->getSession()->get('GiftVoucherProductPageAmount');
-            if ($newAmount) {
-                $amount = $newAmount;
-            }
+            $fields = FieldList::create();
+
             $description = $this->DefaultDescription;
             $newDescription = $this->getRequest()->getSession()->get('GiftVoucherProductPageDescription');
             if ($newDescription) {
                 $description = $newDescription;
             }
-            $fields = FieldList::create();
+
             if ($this->CanSetDescription) {
                 $fields->push(TextField::create('Description', $this->DescriptionFieldLabel, $description));
                 $requiredFields[] = 'Description';
+            }
+
+            $amount = $this->MinimumAmount;
+            $newAmount = $this->getRequest()->getSession()->get('GiftVoucherProductPageAmount');
+            if ($newAmount) {
+                $amount = $newAmount;
             }
             $fields->push(CurrencyField::create('Amount', $this->AmountFieldLabel, $amount));
             $requiredFields[] = 'Amount';
@@ -72,13 +75,18 @@ class GiftVoucherProductPageController extends ProductController
         //check amount
         $amount = $this->parseFloat($data['Amount']);
         if ($this->MinimumAmount > 0 && ($amount < $this->MinimumAmount)) {
-            $form->sessionMessage(_t('GiftVoucherProductPage.ERRORINFORMTOOLOW', 'Please enter a higher amount.'), 'bad');
+            $form->sessionMessage(
+                _t('GiftVoucherProductPage.ERRORINFORMTOOLOW', 'Please enter a higher amount.'),
+                'bad'
+            );
+            $form->setSessionData($data);
             $this->redirectBack();
 
             return;
         }
         if ($this->MaximumAmount > 0 && ($amount > $this->MaximumAmount)) {
             $form->sessionMessage(_t('GiftVoucherProductPage.ERRORINFORMTOOHIGH', 'Please enter a lower amount.'), 'bad');
+            $form->setSessionData($data);
             $this->redirectBack();
 
             return;
@@ -88,11 +96,12 @@ class GiftVoucherProductPageController extends ProductController
 
         $this->getRequest()->getSession()->clear('GiftVoucherProductPageAmount');
         $this->getRequest()->getSession()->clear('GiftVoucherProductPageDescription');
+        $form->setSessionData([]);
 
         //create a description
         $description = '';
         if (isset($data['Description']) && $data['Description']) {
-            $description = Convert::raw2sql($data['Description']);
+            $description = $this->removeNonAlphaNumeric($data['Description']);
         } elseif ($this->DefaultDescription) {
             $description = $this->DefaultDescription;
         }
@@ -104,6 +113,7 @@ class GiftVoucherProductPageController extends ProductController
 
         if (! $orderItem) {
             $form->sessionMessage(_t('GiftVoucherProductPage.ERROROTHER', 'Sorry, we could not add your entry.'), 'bad');
+            $form->setSessionData($data);
             $this->redirectBack();
 
             return;
@@ -122,11 +132,21 @@ class GiftVoucherProductPageController extends ProductController
         if ($amount) {
             $this->getRequest()->getSession()->set('GiftVoucherProductPageAmount', $amount);
         }
-        $description = Convert::raw2sql($request->param('OtherID'));
+        $description = urldecode(Convert::raw2sql($request->param('OtherID')));
         if ($description) {
             $this->getRequest()->getSession()->set('GiftVoucherProductPageDescription', $description);
         }
-        $this->redirect($this->Link());
+        if ($amount && $description) {
+            $this->doaddnewpriceform(
+                [
+                    'Amount' => $amount,
+                    'Description' => $description,
+                ],
+                $this->AddNewPriceForm()
+            );
+        } else {
+            $this->redirect($this->Link());
+        }
 
         return [];
     }
@@ -157,7 +177,7 @@ class GiftVoucherProductPageController extends ProductController
         $record = $this->dataRecord;
         /** @var OrderItem $orderItem */
         $orderItem = $shoppingCart->addBuyable($record);
-        if($orderItem) {
+        if ($orderItem) {
             $orderItem->setCustomCalculatedTotal($amount);
             $orderItem->setCustomDescription($description);
         }
@@ -178,5 +198,10 @@ class GiftVoucherProductPageController extends ProductController
     protected function updateOrderItem($orderItem, $data, $form)
     {
         return $orderItem;
+    }
+
+    protected function removeNonAlphaNumeric(string $text): string
+    {
+        return preg_replace('/[^a-zA-Z0-9 ]/', '', $text);
     }
 }
