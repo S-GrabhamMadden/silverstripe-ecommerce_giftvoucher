@@ -120,7 +120,7 @@ class GiftVoucherProductPage extends Product
         $fields = parent::getCMSFields();
         $fieldLabels = $this->fieldLabels();
         $fieldLabelsRight = Config::inst()->get(GiftVoucherProductPage::class, 'field_labels_right');
-        $exampleLink = Director::absoluteURL($this->Link('setamount')) . '/123.45/?description=' . urlencode('test payment only');
+        $exampleLink = Director::absoluteURL($this->Link('setamount')) . '/123.45/' . urlencode('test payment only');
         $exampleLinkExplanation = sprintf(_t('GiftVoucherProductPage.EXPLANATION', '<br /><br /><h5>How to preset the amount?</h5><p>The link <a href="%1$s">%1$s</a> will pre-set the amount to 123.45. You can use this link (and vary the amount as needed) to cutomers to receive payments.</p>.'), $exampleLink);
         $fields->addFieldsToTab(
             'Root.Form',
@@ -172,7 +172,7 @@ class GiftVoucherProductPage extends Product
             ],
             'Visibility'
         );
-        if($this->AlwaysHideFromSearchAndMenus) {
+        if ($this->AlwaysHideFromSearchAndMenus) {
             $fields->removeByName('ShowInMenus');
             $fields->removeByName('ShowInSearch');
         }
@@ -182,10 +182,9 @@ class GiftVoucherProductPage extends Product
     public function onBeforeWrite()
     {
         parent::onBeforeWrite();
-        if($this->AlwaysHideFromSearchAndMenus) {
+        if ($this->AlwaysHideFromSearchAndMenus) {
             $this->ShowInMenus = false;
             $this->ShowInSearch = false;
         }
     }
-
 }
