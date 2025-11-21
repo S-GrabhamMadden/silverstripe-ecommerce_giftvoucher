@@ -112,10 +112,8 @@ class GiftVoucherProductPageProductOrderItem extends ProductOrderItem
 
     public function getTableSubTitle(): string
     {
-        if($this->priceHasBeenFixed()) {
-            if($this->TableSubTitleFixed) {
-                return (string) $this->TableSubTitleFixed;
-            }
+        if ($this->priceHasBeenFixed()) {
+            return (string) $this->TableSubTitleFixed;
         }
         return (string) $this->Description;
     }
