@@ -18,9 +18,9 @@ use Sunnysideup\Ecommerce\Pages\ProductController;
 /**
  * Class \Sunnysideup\EcommerceGiftvoucher\GiftVoucherProductPageController
  *
- * @property \Sunnysideup\EcommerceGiftvoucher\GiftVoucherProductPage $dataRecord
- * @method \Sunnysideup\EcommerceGiftvoucher\GiftVoucherProductPage data()
- * @mixin \Sunnysideup\EcommerceGiftvoucher\GiftVoucherProductPage
+ * @property GiftVoucherProductPage $dataRecord
+ * @method GiftVoucherProductPage data()
+ * @mixin GiftVoucherProductPage
  */
 class GiftVoucherProductPageController extends ProductController
 {
@@ -52,6 +52,7 @@ class GiftVoucherProductPageController extends ProductController
             if ($newAmount) {
                 $amount = $newAmount;
             }
+
             $fields->push(CurrencyField::create('Amount', $this->AmountFieldLabel, $amount));
             $requiredFields[] = 'Amount';
 
@@ -82,14 +83,15 @@ class GiftVoucherProductPageController extends ProductController
             $form->setSessionData($data);
             $this->redirectBack();
 
-            return;
+            return null;
         }
+
         if ($this->MaximumAmount > 0 && ($amount > $this->MaximumAmount)) {
             $form->sessionMessage(_t('GiftVoucherProductPage.ERRORINFORMTOOHIGH', 'Please enter a lower amount.'), 'bad');
             $form->setSessionData($data);
             $this->redirectBack();
 
-            return;
+            return null;
         }
 
         //clear settings from URL
@@ -105,6 +107,7 @@ class GiftVoucherProductPageController extends ProductController
         } elseif ($this->DefaultDescription) {
             $description = $this->DefaultDescription;
         }
+
         //..
 
         //create order item and update it ... if needed
@@ -116,8 +119,9 @@ class GiftVoucherProductPageController extends ProductController
             $form->setSessionData($data);
             $this->redirectBack();
 
-            return;
+            return null;
         }
+
         $checkoutPage = CheckoutPage::get()->First();
         if ($checkoutPage) {
             return $this->redirect($checkoutPage->Link());
@@ -129,13 +133,15 @@ class GiftVoucherProductPageController extends ProductController
     public function setamount($request)
     {
         $amount = floatval($request->param('ID'));
-        if ($amount) {
+        if ($amount !== 0.0) {
             $this->getRequest()->getSession()->set('GiftVoucherProductPageAmount', $amount);
         }
+
         $description = urldecode(Convert::raw2sql($request->param('OtherID')));
-        if ($description) {
+        if ($description !== '' && $description !== '0') {
             $this->getRequest()->getSession()->set('GiftVoucherProductPageDescription', $description);
         }
+
         if ($amount && $description) {
             $this->doaddnewpriceform(
                 [

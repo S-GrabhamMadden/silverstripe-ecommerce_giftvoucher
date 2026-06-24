@@ -60,7 +60,7 @@ class GiftVoucherProductPageProductOrderItem extends ProductOrderItem
         return $this->Config()->get('singular_name');
     }
 
-    public function i18n_plural_name()
+    public function plural_name()
     {
         return $this->Config()->get('plural_name');
     }
@@ -115,6 +115,7 @@ class GiftVoucherProductPageProductOrderItem extends ProductOrderItem
         if ($this->priceHasBeenFixed()) {
             return (string) $this->TableSubTitleFixed;
         }
+
         return (string) $this->Description;
     }
 

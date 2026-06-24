@@ -12,7 +12,6 @@ use SilverStripe\Forms\TextField;
 use SilverStripe\Security\Member;
 use Sunnysideup\Ecommerce\Pages\Product;
 use Sunnysideup\EcommerceGiftvoucher\Model\GiftVoucherProductPageProductOrderItem;
-use Page;
 
 /**
  * Class \Sunnysideup\EcommerceGiftvoucher\GiftVoucherProductPage
@@ -100,7 +99,7 @@ class GiftVoucherProductPage extends Product
         return _t('GiftVoucherProductPage.GIFT_VOUCHER_PRODUCT_PAGE', 'Gift Voucher Page');
     }
 
-    public function i18n_plural_name()
+    public function plural_name()
     {
         return _t('GiftVoucherProductPage.GIFT_VOUCHER_PRODUCT_PAGES', 'Gift Voucher Pages');
     }
@@ -140,6 +139,7 @@ class GiftVoucherProductPage extends Product
         if (!$this->CanSetDescription) {
             $fields->removeByName('DescriptionFieldLabel');
         }
+
         // Standard product detail fields
         $fields->removeFieldsFromTab(
             'Root.Details',
@@ -176,10 +176,11 @@ class GiftVoucherProductPage extends Product
             $fields->removeByName('ShowInMenus');
             $fields->removeByName('ShowInSearch');
         }
+
         return $fields;
     }
 
-    public function onBeforeWrite()
+    protected function onBeforeWrite()
     {
         parent::onBeforeWrite();
         if ($this->AlwaysHideFromSearchAndMenus) {
